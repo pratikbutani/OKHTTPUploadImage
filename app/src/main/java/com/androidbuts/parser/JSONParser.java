@@ -2,18 +2,18 @@ package com.androidbuts.parser;
 
 import android.util.Log;
 
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.MultipartBuilder;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
-
 import org.json.JSONObject;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 
 /**
@@ -26,7 +26,7 @@ public class JSONParser {
      * You will find this file in php_upload folder in this project
      * You can copy that folder and paste in your htdocs folder...
      */
-    private static final String URL_UPLOAD_IMAGE = "http://192.168.0.105/php_upload/upload.php";
+    private static final String URL_UPLOAD_IMAGE = "http://192.168.0.103/php_upload/upload.php";
 
     /**
      * Upload Image
@@ -45,9 +45,22 @@ public class JSONParser {
 
             String filename = sourceImageFile.substring(sourceImageFile.lastIndexOf("/")+1);
 
-            RequestBody requestBody = new MultipartBuilder()
-                    .type(MultipartBuilder.FORM)
+            /**
+             * OKHTTP2
+             */
+//            RequestBody requestBody = new MultipartBuilder()
+//                    .type(MultipartBuilder.FORM)
+//                    .addFormDataPart("member_id", memberId)
+//                    .addFormDataPart("file", "profile.png", RequestBody.create(MEDIA_TYPE_PNG, sourceFile))
+//                    .build();
+
+            /**
+             * OKHTTP3
+             */
+            RequestBody requestBody = new MultipartBody.Builder()
+                    .setType(MultipartBody.FORM)
                     .addFormDataPart("uploaded_file", filename, RequestBody.create(MEDIA_TYPE_PNG, sourceFile))
+                    .addFormDataPart("result", "my_image")
                     .build();
 
             Request request = new Request.Builder()
@@ -57,7 +70,9 @@ public class JSONParser {
 
             OkHttpClient client = new OkHttpClient();
             Response response = client.newCall(request).execute();
-            return new JSONObject(response.body().string());
+            String res = response.body().string();
+            Log.e("TAG", "Error: " + res);
+            return new JSONObject(res);
 
         } catch (UnknownHostException | UnsupportedEncodingException e) {
             Log.e("TAG", "Error: " + e.getLocalizedMessage());
